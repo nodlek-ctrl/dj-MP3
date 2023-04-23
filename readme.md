@@ -14,7 +14,7 @@ This program searches for lyric videos of songs on YouTube and downloads them as
 1. Create a new spreadsheet called `songs.xlsx` in the same directory as the program.
 2. In the spreadsheet, create two columns: `Song` and `Artist`. The first row of the spreadsheet should contain headers for the columns.
 3. Fill in the `Song` and `Artist` columns with the names of the songs and artists you want to search for.
-4. Run the program using the command `python main.py`.
+4. Run the program using the command `python dj.py`.
 5. The program will search for a matching lyric video for each song and artist combination in the spreadsheet. If a matching video is found, the program will retrieve the video ID and store it in the sixth column of the same row.
 6. If the user chooses to download the video, the program uses the video ID to download the video as an MP3.
 
