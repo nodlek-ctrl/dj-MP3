@@ -1,5 +1,6 @@
 import openpyxl
 from youtube_search import YoutubeSearch
+import yt_dlp
 
 # Set the path to the XLSX spreadsheet
 xlsx_file = 'songs.xlsx'
@@ -34,8 +35,35 @@ if song_col_index is None or artist_col_index is None:
     print("Error: could not find 'Song' and/or 'Artist' columns")
     exit()
 
+# Set the flag for downloading all videos to False initially
+download_all = False
+
+# Prompt the user to choose whether to download all videos or not
+choice = input("Do you want to download all videos? (Y/N)")
+
+# Set the flag to True if the user enters 'Y' or 'y'
+if choice.lower() == 'y':
+    download_all = True
+
+# Create a YouTube downloader
+ydl_opts = {
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+}
+
+# Iterate through the rows of the worksheet
 # Iterate through the rows of the worksheet
 for row in worksheet.iter_rows(min_row=2):
+    video_id = row[5].value
+    if video_id:
+        # Video ID is already present, skip the search and move on to the next row
+        print(f"Video ID already present: {video_id}")
+        continue
+
     song_title = row[song_col_index - 1].value
     artist_name = row[artist_col_index - 1].value
 
@@ -53,49 +81,15 @@ for row in worksheet.iter_rows(min_row=2):
     # Write the video ID to the sixth column of the current row
     worksheet.cell(row=row[0].row, column=6).value = video_id if video_id else ""
 
-# Save the changes to the XLSX spreadsheet
-workbook.save(xlsx_file)
-
-if input('Download? Y or N') == 'Y':
-    import openpyxl
-    import yt_dlp
-
-    # Set the path to the XLSX spreadsheet
-    xlsx_file = 'songs.xlsx'
-
-    # Set the name of the sheet containing the video titles and artist names
-    sheet = 'songs'
-
-    # Load the XLSX spreadsheet
-    workbook = openpyxl.load_workbook(xlsx_file)
-
-    # Get the active sheet
-    worksheet = workbook[sheet]
-
-    # Create a YouTube downloader
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
-
-    for row in worksheet.iter_rows(min_row=2, min_col=6, max_col=6, values_only=True):
-        video_id = row[0]
-        if not video_id:
-            continue
-
+    if download_all or input('Download? Y or N:') == 'Y':
         print(f"Downloading video: {video_id}")
 
         # Download the video as an MP3
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([f"https://www.youtube.com/watch?v={video_id}"])
 
-    # Save the changes to the XLSX spreadsheet
-    workbook.save(xlsx_file)
 
-else:
-    print('Bye')
-    exit()
+# Save the changes to the XLSX spreadsheet
+workbook.save(xlsx_file)
+
+print('Done')    
